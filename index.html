@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Ingliz tili - Yakuniy testlar 2025</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+        .correct-flash {
+            background-color: #22c55e !important;
+            transition: 0.1s;
+        }
+        .wrong-flash {
+            background-color: #ef4444 !important;
+            transition: 0.1s;
+        }
+        .option-btn {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .option-btn:active {
+            transform: scale(0.98);
+        }
+        .tab-active {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        .tab-inactive {
+            background-color: #e2e8f0;
+            color: #1e293b;
+        }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #2e1065 100%);
+        }
+    </style>
+</head>
+<body class="min-h-screen py-4 px-3">
+
+    <div class="max-w-2xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1 class="text-xl md:text-2xl font-bold text-white">📘 Ingliz tili</h1>
+            <p class="text-indigo-200 text-sm">Yakuniy nazorat testlari 2025</p>
+            <p class="text-indigo-300 text-xs mt-1">Articles · Comparatives · Past Simple · Present Simple</p>
+        </div>
+
+        <!-- Bo'lim Tabs -->
+        <div class="flex flex-wrap gap-2 mb-4 justify-center">
+            <button data-section="0" class="section-tab px-4 py-2 rounded-xl font-semibold transition-all tab-active">1-bo‘lim (Articles)</button>
+            <button data-section="1" class="section-tab px-4 py-2 rounded-xl font-semibold transition-all tab-inactive">2-bo‘lim (Comparatives)</button>
+            <button data-section="2" class="section-tab px-4 py-2 rounded-xl font-semibold transition-all tab-inactive">3-bo‘lim (Past Simple)</button>
+            <button data-section="3" class="section-tab px-4 py-2 rounded-xl font-semibold transition-all tab-inactive">4-bo‘lim (Present Simple)</button>
+            <button data-section="4" class="section-tab px-4 py-2 rounded-xl font-semibold transition-all tab-inactive">5-bo‘lim (Mixed)</button>
+        </div>
+
+        <!-- Test Card -->
+        <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 text-white">
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold">📋 <span id="section-name">1-bo‘lim</span> — <span id="current-num">1</span> / <span id="total-num">0</span></span>
+                    <span id="score-badge" class="bg-white/20 px-3 py-1 rounded-full text-sm">⭐ 0 to'g'ri</span>
+                </div>
+                <div class="w-full bg-white/30 rounded-full h-2 mt-3">
+                    <div id="progress-bar" class="bg-yellow-300 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div id="question-area" class="p-5 md:p-6 min-h-[340px]">
+                <!-- Dynamic -->
+            </div>
+
+            <div id="feedback" class="px-5 pb-2 text-center text-sm font-medium hidden"></div>
+
+            <div class="px-5 pb-5 flex gap-3">
+                <button id="restart-btn" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-2 rounded-xl transition">🔄 Bo‘limni qayta boshlash</button>
+            </div>
+        </div>
+
+        <!-- Result Modal -->
+        <div id="result-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+            <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+                <div class="text-5xl mb-2">📊</div>
+                <h2 class="text-2xl font-bold text-gray-800">Test yakunlandi!</h2>
+                <p class="text-gray-500 mt-1">Bo‘lim yakuni</p>
+                <div class="text-5xl font-bold text-blue-600 my-2"><span id="final-score">0</span> / <span id="final-total">0</span></div>
+                <div class="w-full bg-gray-200 rounded-full h-3 mb-3">
+                    <div id="final-bar" class="bg-blue-600 h-3 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="congrats" class="text-sm text-gray-500 mb-4"></p>
+                <button id="modal-restart" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-xl transition w-full">🔄 Bo‘limni qayta</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== TO'LIQ SAVOLLAR (Fayldagi barcha testlar) ====================
+        
+        // 1-bo'lim: Articles (a/an/the) - 25 ta savol
+        const section0 = [
+            { text: "I have ___ apple.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "She is ___ teacher.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "He bought ___ orange.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "This is ___ book.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "She saw ___ elephant.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "I need ___ pen.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "He has ___ umbrella.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "She is ___ doctor.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "I ate ___ egg.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "This is ___ car.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "She bought ___ ice cream.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "He is ___ student.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "I saw ___ owl.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "This is ___ house.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "She found ___ old coin.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "He has ___ bike.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "I met ___ artist.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "This is ___ table.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "She saw ___ eagle.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "He needs ___ computer.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "I saw ___ ant.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "She has ___ dog.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "He ate ___ apple.", options: ["an", "a", "the", "--"], correct: "an" },
+            { text: "This is ___ chair.", options: ["a", "an", "the", "--"], correct: "a" },
+            { text: "She saw ___ insect.", options: ["an", "a", "the", "--"], correct: "an" }
+        ];
+
+        // 2-bo'lim: Comparatives (comparative & superlative) - 25 ta savol
+        const section1 = [
+            { text: "My house is ___ than yours.", options: ["bigger", "big", "biggest", "more big"], correct: "bigger" },
+            { text: "This book is the ___ in the class.", options: ["best", "good", "better", "more good"], correct: "best" },
+            { text: "She is ___ than her sister.", options: ["taller", "tall", "tallest", "more tall"], correct: "taller" },
+            { text: "This road is the ___ in the city.", options: ["longest", "longer", "long", "more long"], correct: "longest" },
+            { text: "Today is ___ than yesterday.", options: ["colder", "cold", "coldest", "more cold"], correct: "colder" },
+            { text: "This is the ___ mountain here.", options: ["highest", "high", "higher", "more high"], correct: "highest" },
+            { text: "My bag is ___ than yours.", options: ["heavier", "heavy", "heaviest", "more heavy"], correct: "heavier" },
+            { text: "She is the ___ girl in the group.", options: ["youngest", "younger", "young", "more young"], correct: "youngest" },
+            { text: "This problem is ___ than the last one.", options: ["easier", "easy", "easiest", "more easy"], correct: "easier" },
+            { text: "He is the ___ student in the class.", options: ["smartest", "smarter", "smart", "more smart"], correct: "smartest" },
+            { text: "This car is ___ than that one.", options: ["faster", "fast", "fastest", "more fast"], correct: "faster" },
+            { text: "She is the ___ person I know.", options: ["kindest", "kinder", "kind", "more kind"], correct: "kindest" },
+            { text: "This test is ___ than the last test.", options: ["harder", "hard", "hardest", "more hard"], correct: "harder" },
+            { text: "Today is the ___ day of the week.", options: ["busiest", "busier", "busy", "more busy"], correct: "busiest" },
+            { text: "My brother is ___ than me.", options: ["older", "old", "oldest", "more old"], correct: "older" },
+            { text: "This river is the ___ in the country.", options: ["widest", "wide", "wider", "more wide"], correct: "widest" },
+            { text: "This question is ___ than that one.", options: ["simpler", "simple", "simplest", "more simple"], correct: "simpler" },
+            { text: "She is the ___ player on the team.", options: ["strongest", "stronger", "strong", "more strong"], correct: "strongest" },
+            { text: "My room is ___ than yours.", options: ["cleaner", "clean", "cleanest", "more clean"], correct: "cleaner" },
+            { text: "This is the ___ building here.", options: ["tallest", "taller", "tall", "more tall"], correct: "tallest" },
+            { text: "My dog is ___ than your dog.", options: ["friendlier", "friendly", "friendliest", "more friendly"], correct: "friendlier" },
+            { text: "This road is ___ than the other road.", options: ["shorter", "short", "shortest", "more short"], correct: "shorter" },
+            { text: "She is the ___ girl in our class.", options: ["prettiest", "prettier", "pretty", "more pretty"], correct: "prettiest" },
+            { text: "This box is ___ than that box.", options: ["lighter", "light", "lightest", "more light"], correct: "lighter" },
+            { text: "This chair is ___ than that chair.", options: ["more comfortable", "comfortable", "most comfortable", "comfortabler"], correct: "more comfortable" }
+        ];
+
+        // 3-bo'lim: Past Simple - 25 ta savol
+        const section2 = [
+            { text: "She ___ to school yesterday.", options: ["went", "goes", "go", "going"], correct: "went" },
+            { text: "They ___ football last Sunday.", options: ["played", "play", "plays", "playing"], correct: "played" },
+            { text: "I ___ my homework yesterday evening.", options: ["finished", "finish", "finishing", "finishes"], correct: "finished" },
+            { text: "We ___ TV last night.", options: ["watched", "watch", "watches", "watching"], correct: "watched" },
+            { text: "He ___ his friend two days ago.", options: ["visited", "visit", "visits", "visiting"], correct: "visited" },
+            { text: "My mother ___ dinner yesterday.", options: ["cooked", "cook", "cooks", "cooking"], correct: "cooked" },
+            { text: "They ___ to the park yesterday.", options: ["walked", "walk", "walks", "walking"], correct: "walked" },
+            { text: "She ___ a letter last week.", options: ["wrote", "write", "writes", "writing"], correct: "wrote" },
+            { text: "We ___ a new film yesterday.", options: ["saw", "see", "sees", "seeing"], correct: "saw" },
+            { text: "I ___ tea last morning.", options: ["drank", "drink", "drinks", "drinking"], correct: "drank" },
+            { text: "He ___ a book yesterday.", options: ["read", "reads", "reading", "readed"], correct: "read" },
+            { text: "They ___ English last year.", options: ["studied", "study", "studies", "studying"], correct: "studied" },
+            { text: "She ___ a beautiful song yesterday.", options: ["sang", "sing", "sings", "singing"], correct: "sang" },
+            { text: "We ___ our grandparents last weekend.", options: ["visited", "visit", "visits", "visiting"], correct: "visited" },
+            { text: "I ___ very tired yesterday.", options: ["was", "am", "are", "be"], correct: "was" },
+            { text: "They ___ happy after the exam.", options: ["were", "are", "was", "be"], correct: "were" },
+            { text: "He ___ breakfast at 8 a.m. yesterday.", options: ["had", "has", "have", "having"], correct: "had" },
+            { text: "She ___ her keys yesterday.", options: ["lost", "lose", "loses", "losing"], correct: "lost" },
+            { text: "We ___ the museum last month.", options: ["visited", "visit", "visits", "visiting"], correct: "visited" },
+            { text: "I ___ a new phone last year.", options: ["bought", "buy", "buys", "buying"], correct: "bought" },
+            { text: "He ___ very fast yesterday.", options: ["ran", "run", "runs", "running"], correct: "ran" },
+            { text: "They ___ late yesterday.", options: ["arrived", "arrive", "arrives", "arriving"], correct: "arrived" },
+            { text: "She ___ a cake for her friend.", options: ["made", "make", "makes", "making"], correct: "made" },
+            { text: "We ___ our teacher yesterday.", options: ["met", "meet", "meets", "meeting"], correct: "met" },
+            { text: "They ___ a lot of photos yesterday.", options: ["took", "take", "takes", "taking"], correct: "took" }
+        ];
+
+        // 4-bo'lim: Present Simple - 25 ta savol
+        const section3 = [
+            { text: "I ___ at 7 a.m. every day.", options: ["wake up", "go to bed", "have lunch", "watch TV"], correct: "wake up" },
+            { text: "She ___ her teeth every morning.", options: ["brushes", "washes", "eats", "reads"], correct: "brushes" },
+            { text: "We ___ breakfast at 8 a.m.", options: ["have", "do", "make", "go"], correct: "have" },
+            { text: "He ___ a shower in the morning.", options: ["takes", "makes", "goes", "does"], correct: "takes" },
+            { text: "They ___ to school at 8:30.", options: ["go", "eat", "drink", "make"], correct: "go" },
+            { text: "I ___ dressed after taking a shower.", options: ["get", "make", "go", "have"], correct: "get" },
+            { text: "She ___ lunch at 1 p.m.", options: ["has", "does", "makes", "goes"], correct: "has" },
+            { text: "We ___ homework in the evening.", options: ["do", "make", "take", "have"], correct: "do" },
+            { text: "He ___ TV after dinner.", options: ["watches", "eats", "drinks", "takes"], correct: "watches" },
+            { text: "I ___ to bed at 10 p.m.", options: ["go", "get", "make", "take"], correct: "go" },
+            { text: "She ___ coffee every morning.", options: ["drinks", "eats", "takes", "makes"], correct: "drinks" },
+            { text: "They ___ dinner together.", options: ["have", "go", "take", "make"], correct: "have" },
+            { text: "I ___ my face in the morning.", options: ["wash", "eat", "drink", "watch"], correct: "wash" },
+            { text: "He ___ the bus to school.", options: ["takes", "makes", "eats", "drinks"], correct: "takes" },
+            { text: "We ___ English every day.", options: ["study", "eat", "drink", "take"], correct: "study" },
+            { text: "She ___ her homework after school.", options: ["does", "takes", "eats", "drinks"], correct: "does" },
+            { text: "I ___ music in the evening.", options: ["listen to", "eat", "drink", "take"], correct: "listen to" },
+            { text: "They ___ football after school.", options: ["play", "drink", "eat", "make"], correct: "play" },
+            { text: "He ___ a book before sleeping.", options: ["reads", "drinks", "eats", "makes"], correct: "reads" },
+            { text: "We ___ dinner at 7 p.m.", options: ["have", "go", "make", "take"], correct: "have" },
+            { text: "She ___ to work at 9 a.m.", options: ["goes", "drinks", "eats", "makes"], correct: "goes" },
+            { text: "I ___ my room every weekend.", options: ["clean", "eat", "drink", "make"], correct: "clean" },
+            { text: "They ___ their parents in the evening.", options: ["help", "drink", "eat", "take"], correct: "help" },
+            { text: "He ___ emails in the morning.", options: ["checks", "eats", "drinks", "makes"], correct: "checks" },
+            { text: "We ___ shopping on weekends.", options: ["go", "eat", "drink", "take"], correct: "go" }
+        ];
+
+        // 5-bo'lim: Mixed (turli mavzulardan qo'shimcha) - 22 ta savol
+        const section4 = [
+            { text: "This is the ___ day of my life.", options: ["happiest", "happier", "happy", "more happy"], correct: "happiest" },
+            { text: "My car is ___ than your car.", options: ["newer", "new", "newest", "more new"], correct: "newer" },
+            { text: "She is ___ than me in English.", options: ["better", "good", "best", "more good"], correct: "better" },
+            { text: "This is the ___ place in the city.", options: ["most beautiful", "more beautiful", "beautiful", "beautifuler"], correct: "most beautiful" },
+            { text: "I ___ the door yesterday.", options: ["opened", "open", "opens", "opening"], correct: "opened" },
+            { text: "He ___ the window yesterday.", options: ["closed", "close", "closes", "closing"], correct: "closed" },
+            { text: "She ___ her homework yesterday.", options: ["did", "do", "does", "doing"], correct: "did" },
+            { text: "I ___ a movie yesterday.", options: ["watched", "watch", "watches", "watching"], correct: "watched" },
+            { text: "He ___ the answer yesterday.", options: ["knew", "know", "knows", "knowing"], correct: "knew" },
+            { text: "She ___ her friend last night.", options: ["called", "call", "calls", "calling"], correct: "called" },
+            { text: "I ___ my bag yesterday.", options: ["found", "find", "finds", "finding"], correct: "found" },
+            { text: "He ___ very well yesterday.", options: ["slept", "sleep", "sleeps", "sleeping"], correct: "slept" },
+            { text: "She ___ the truth yesterday.", options: ["told", "tell", "tells", "telling"], correct: "told" },
+            { text: "I ___ my friend yesterday.", options: ["helped", "help", "helps", "helping"], correct: "helped" },
+            { text: "He ___ the ball yesterday.", options: ["caught", "catch", "catches", "catching"], correct: "caught" },
+            { text: "I ___ the bus yesterday.", options: ["missed", "miss", "misses", "missing"], correct: "missed" },
+            { text: "She ___ very hard yesterday.", options: ["worked", "work", "works", "working"], correct: "worked" },
+            { text: "We ___ lunch together yesterday.", options: ["ate", "eat", "eats", "eating"], correct: "ate" },
+            { text: "I ___ the answer yesterday.", options: ["understood", "understand", "understands", "understanding"], correct: "understood" },
+            { text: "She ___ her bag before school.", options: ["prepares", "drinks", "eats", "makes"], correct: "prepares" },
+            { text: "He ___ his bike to school.", options: ["rides", "eats", "drinks", "makes"], correct: "rides" },
+            { text: "They ___ questions after class.", options: ["ask", "drink", "eat", "make"], correct: "ask" }
+        ];
+
+        const allSections = [section0, section1, section2, section3, section4];
+        const sectionNames = ["1-bo‘lim (Articles a/an/the)", "2-bo‘lim (Comparatives)", "3-bo‘lim (Past Simple)", "4-bo‘lim (Present Simple)", "5-bo‘lim (Mixed)"];
+
+        let currentSection = 0;
+        let shuffledQuestions = [];
+        let userAnswers = [];
+        let currentIndex = 0;
+        let isLocked = false;
+        let totalQuestions = 0;
+
+        // DOM elements
+        const questionArea = document.getElementById('question-area');
+        const currentNumSpan = document.getElementById('current-num');
+        const totalNumSpan = document.getElementById('total-num');
+        const scoreBadge = document.getElementById('score-badge');
+        const progressBar = document.getElementById('progress-bar');
+        const restartBtn = document.getElementById('restart-btn');
+        const feedbackDiv = document.getElementById('feedback');
+        const resultModal = document.getElementById('result-modal');
+        const finalScoreSpan = document.getElementById('final-score');
+        const finalTotalSpan = document.getElementById('final-total');
+        const finalBar = document.getElementById('final-bar');
+        const congratsSpan = document.getElementById('congrats');
+        const modalRestart = document.getElementById('modal-restart');
+        const sectionNameSpan = document.getElementById('section-name');
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        function shuffleOptions(question) {
+            return shuffleArray([...question.options]);
+        }
+
+        function loadSection(sectionIdx) {
+            currentSection = sectionIdx;
+            const sectionData = allSections[currentSection];
+            shuffledQuestions = shuffleArray([...sectionData]);
+            totalQuestions = shuffledQuestions.length;
+            userAnswers = new Array(totalQuestions).fill(null);
+            currentIndex = 0;
+            isLocked = false;
+            feedbackDiv.classList.add('hidden');
+            sectionNameSpan.innerText = sectionNames[currentSection];
+            renderQuestion();
+            updateStats();
+        }
+
+        function updateStats() {
+            const correctCount = userAnswers.reduce((acc, ans, idx) => {
+                if (ans === null) return acc;
+                return acc + (ans === shuffledQuestions[idx].correct ? 1 : 0);
+            }, 0);
+            scoreBadge.innerHTML = `⭐ ${correctCount} to'g'ri`;
+            const answered = userAnswers.filter(a => a !== null).length;
+            const percent = (answered / totalQuestions) * 100;
+            progressBar.style.width = `${percent}%`;
+        }
+
+        function renderQuestion() {
+            if (currentIndex >= totalQuestions) {
+                showResults();
+                return;
+            }
+            const q = shuffledQuestions[currentIndex];
+            const shuffledOpts = shuffleOptions(q);
+            
+            let html = `
+                <div class="fade-in">
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="text-sm text-blue-500 font-semibold bg-blue-100 px-3 py-1 rounded-full">Savol ${currentIndex+1}/${totalQuestions}</span>
+                    </div>
+                    <h2 class="text-lg md:text-xl font-bold text-gray-800 mb-5 leading-relaxed">${escapeHtml(q.text)}</h2>
+                    <div class="space-y-3">
+            `;
+            
+            const letters = ['A', 'B', 'C', 'D'];
+            shuffledOpts.forEach((opt, idx) => {
+                const isSelected = (userAnswers[currentIndex] === opt);
+                html += `
+                    <button class="option-btn w-full text-left p-3 rounded-xl border-2 ${isSelected ? 'bg-blue-100 border-blue-500' : 'bg-gray-50 border-gray-200 hover:border-blue-300'} flex items-start gap-3" data-value="${escapeHtml(opt)}">
+                        <span class="font-bold text-blue-600 min-w-[30px]">${letters[idx]}.</span>
+                        <span class="flex-1">${escapeHtml(opt)}</span>
+                    </button>
+                `;
+            });
+            
+            html += `</div></div>`;
+            questionArea.innerHTML = html;
+            
+            document.querySelectorAll('.option-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    if (isLocked) return;
+                    const selected = btn.getAttribute('data-value');
+                    handleAnswer(selected, btn);
+                });
+            });
+            
+            totalNumSpan.innerText = totalQuestions;
+            currentNumSpan.innerText = currentIndex + 1;
+        }
+        
+        function handleAnswer(selected, btnElement) {
+            const currentQ = shuffledQuestions[currentIndex];
+            const isCorrect = (selected === currentQ.correct);
+            
+            userAnswers[currentIndex] = selected;
+            updateStats();
+            
+            isLocked = true;
+            
+            if (isCorrect) {
+                btnElement.classList.add('correct-flash');
+                showFeedback("✅ To‘g‘ri javob!", "text-green-600");
+                setTimeout(() => {
+                    btnElement.classList.remove('correct-flash');
+                    moveToNext();
+                }, 800);
+            } else {
+                btnElement.classList.add('wrong-flash');
+                showFeedback(`❌ Noto‘g‘ri! To‘g‘ri javob: ${currentQ.correct}`, "text-red-600");
+                setTimeout(() => {
+                    btnElement.classList.remove('wrong-flash');
+                    moveToNext();
+                }, 3000);
+            }
+        }
+        
+        function moveToNext() {
+            if (currentIndex + 1 < totalQuestions) {
+                currentIndex++;
+                renderQuestion();
+                isLocked = false;
+                feedbackDiv.classList.add('hidden');
+            } else if (currentIndex + 1 === totalQuestions) {
+                currentIndex++;
+                isLocked = false;
+                feedbackDiv.classList.add('hidden');
+                showResults();
+            } else {
+                isLocked = false;
+            }
+        }
+        
+        function showFeedback(msg, colorClass) {
+            feedbackDiv.innerHTML = `<span class="${colorClass} font-medium">${msg}</span>`;
+            feedbackDiv.classList.remove('hidden');
+        }
+        
+        function showResults() {
+            const correctCount = userAnswers.reduce((acc, ans, idx) => {
+                if (ans === null) return acc;
+                return acc + (ans === shuffledQuestions[idx].correct ? 1 : 0);
+            }, 0);
+            const percent = Math.round((correctCount / totalQuestions) * 100);
+            finalScoreSpan.innerText = correctCount;
+            finalTotalSpan.innerText = totalQuestions;
+            finalBar.style.width = `${percent}%`;
+            
+            if (percent >= 80) congratsSpan.innerHTML = "🎉 Ajoyib! Ingliz tilingiz zo'r!";
+            else if (percent >= 60) congratsSpan.innerHTML = "👍 Yaxshi! Yana bir marta takrorlang.";
+            else congratsSpan.innerHTML = "📚 Qayta o‘rganib, testni takrorlang.";
+            
+            resultModal.classList.remove('hidden');
+        }
+        
+        function restartCurrentSection() {
+            resultModal.classList.add('hidden');
+            loadSection(currentSection);
+        }
+        
+        function escapeHtml(str) {
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        // Tab switching
+        document.querySelectorAll('.section-tab').forEach((tab, idx) => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.section-tab').forEach(t => {
+                    t.classList.remove('tab-active');
+                    t.classList.add('tab-inactive');
+                });
+                tab.classList.remove('tab-inactive');
+                tab.classList.add('tab-active');
+                loadSection(idx);
+            });
+        });
+        
+        restartBtn.addEventListener('click', restartCurrentSection);
+        modalRestart.addEventListener('click', () => {
+            resultModal.classList.add('hidden');
+            loadSection(currentSection);
+        });
+        
+        // Start with first section
+        loadSection(0);
+    </script>
+</body>
+</html>
